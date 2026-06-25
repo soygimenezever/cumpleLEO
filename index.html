@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feliz Cumpleaños Leo Messi</title>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background-color: #000; color: white; font-family: sans-serif; }
+        #container { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; text-align: center; }
+        #main-bg {
+            background-image: url('messi.png');
+            background-size: contain; 
+            background-position: center;
+            background-repeat: no-repeat;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+        }
+        #birthday-video {
+            display: none;
+            width: 100%;
+            height: 100%;
+            z-index: 20;
+            position: relative;
+        }
+        #timer-box { 
+            z-index: 10; 
+            background: rgba(0,0,0,0.5); 
+            padding: 20px; 
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="main-bg"></div>
+
+    <div id="container">
+        <div id="timer-box">
+            <h1>¡Falta poco para saludar a Messi!</h1>
+            <div id="timer" style="font-size: 3rem; font-weight: bold;">Cargando...</div>
+        </div>
+
+        <video id="birthday-video" autoplay loop muted playsinline>
+            <source src="cumpleLEO.mp4" type="video/mp4">
+            Tu navegador no soporta video.
+        </video>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN DE PRUEBA ---
+        // Cambia 'modoPrueba' a false cuando ya quieras usar el tiempo real del sistema.
+        const modoPrueba = false; 
+        const fechaBase = new Date("2026-06-24T09:59:50").getTime();
+        let segundosTranscurridos = 0;
+
+        function actualizarPagina() {
+            // Si es modo prueba, el tiempo avanza 1 segundo por cada tick
+            const now = modoPrueba ? new Date(fechaBase + (segundosTranscurridos * 1000)) : new Date();
+            if (modoPrueba) segundosTranscurridos++;
+
+            const currentYear = now.getFullYear();
+            const nowTime = now.getTime();
+
+            const timerBox = document.getElementById("timer-box");
+            const mainBg = document.getElementById("main-bg");
+            const video = document.getElementById("birthday-video");
+
+            const startDate = new Date(currentYear, 5, 24, 10, 0, 0).getTime();
+            const endDate = new Date(currentYear, 5, 24, 23, 59, 59).getTime();
+
+            if (nowTime >= startDate && nowTime <= endDate) {
+                timerBox.style.display = "none";
+                mainBg.style.display = "none";
+                video.style.display = "block";
+                video.play().catch(e => console.log("Esperando interacción..."));
+            } else {
+                timerBox.style.display = "flex";
+                mainBg.style.display = "block";
+                video.style.display = "none";
+                video.pause();
+
+                let target = new Date(currentYear, 5, 24, 10, 0, 0).getTime();
+                if (nowTime > target) {
+                    target = new Date(currentYear + 1, 5, 24, 10, 0, 0).getTime();
+                }
+
+                const distance = target - nowTime;
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                document.getElementById("timer").innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+            }
+        }
+
+        setInterval(actualizarPagina, 1000);
+        actualizarPagina();
+
+        document.body.addEventListener('click', function() {
+            const video = document.getElementById("birthday-video");
+            if (video.muted) {
+                video.muted = false;
+                document.getElementById("click-msg").style.display = "none";
+            }
+        }, { once: true });
+    </script>
+</body>
+</html>

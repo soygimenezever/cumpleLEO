@@ -16,12 +16,22 @@
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: 1;
         }
-        #birthday-video {
-            display: none;
+        #vimeo-container {
+            display: none; 
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
             z-index: 20;
-            position: relative;
+            overflow: hidden; /* Esto asegura que el video no se salga del contenedor */
+        }
+
+        /* Asegura que el iframe dentro llene todo el espacio */
+        #vimeo-container iframe {
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Opcional: si no quieres que el usuario interactúe con el iframe directamente */
         }
         #timer-box { 
             z-index: 10; 
@@ -44,20 +54,27 @@
             <div id="timer" style="font-size: 3rem; font-weight: bold;">Cargando...</div>
         </div>
 
-        <video id="birthday-video" autoplay loop muted playsinline>
-            <source src="cumpleLEO.mp4" type="video/mp4">
-            Tu navegador no soporta video.
-        </video>
+        <div id="vimeo-container">
+            <iframe src="https://player.vimeo.com/video/1204602512?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;autoplay=1&amp;loop=1&amp;&controls=0" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" referrerpolicy="strict-origin-when-cross-origin" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="cumpleLEO"></iframe>
+        </div>
+        <script src="https://player.vimeo.com/api/player.js"></script>
     </div>
 
     <script>
         // --- CONFIGURACIÓN DE PRUEBA ---
         // Cambia 'modoPrueba' a false cuando ya quieras usar el tiempo real del sistema.
         const modoPrueba = false; 
-        const fechaBase = new Date("2026-06-24T09:59:50").getTime();
+        const fechaBase = new Date("2026-06-24T09:59:55").getTime();
         let segundosTranscurridos = 0;
+        let vimeoPlayer;
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const iframeElement = document.querySelector('iframe');
+            vimeoPlayer = new Vimeo.Player(iframeElement);
+        });
 
         function actualizarPagina() {
+            if (!vimeoPlayer) return;
             // Si es modo prueba, el tiempo avanza 1 segundo por cada tick
             const now = modoPrueba ? new Date(fechaBase + (segundosTranscurridos * 1000)) : new Date();
             if (modoPrueba) segundosTranscurridos++;
@@ -67,21 +84,23 @@
 
             const timerBox = document.getElementById("timer-box");
             const mainBg = document.getElementById("main-bg");
-            const video = document.getElementById("birthday-video");
 
             const startDate = new Date(currentYear, 5, 24, 10, 0, 0).getTime();
             const endDate = new Date(currentYear, 5, 24, 23, 59, 59).getTime();
 
+            const vimeoContainer = document.getElementById("vimeo-container");
+
             if (nowTime >= startDate && nowTime <= endDate) {
                 timerBox.style.display = "none";
                 mainBg.style.display = "none";
-                video.style.display = "block";
-                video.play().catch(e => console.log("Esperando interacción..."));
+                vimeoContainer.style.display = "block";
+
+                vimeoPlayer.play().catch(e => console.log("Esperando interacción..."));
             } else {
                 timerBox.style.display = "flex";
                 mainBg.style.display = "block";
-                video.style.display = "none";
-                video.pause();
+                vimeoContainer.style.display = "none";
+                vimeoPlayer.pause();
 
                 let target = new Date(currentYear, 5, 24, 10, 0, 0).getTime();
                 if (nowTime > target) {
@@ -102,10 +121,9 @@
         actualizarPagina();
 
         document.body.addEventListener('click', function() {
-            const video = document.getElementById("birthday-video");
-            if (video.muted) {
-                video.muted = false;
-                document.getElementById("click-msg").style.display = "none";
+            // Usamos el mismo objeto vimeoPlayer que creamos antes
+            if (vimeoPlayer) {
+                vimeoPlayer.setVolume(1); // Esto activa el sonido (va de 0 a 1)
             }
         }, { once: true });
     </script>
